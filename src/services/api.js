@@ -55,5 +55,6 @@ export const reportAPI = {
     return api.get('/reports/generate', config)
   },
   getAll: () => api.get('/report'),
-  getById: id => api.get(`/report/${id}`)
+  getById: id => api.get(`/report/${id}`),
+  mailReport: email => api.post('/reports/mailreport', { email })
 }

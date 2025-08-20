@@ -6,11 +6,9 @@ import {
   Settings,
   TrendingUp,
   TrendingDown,
-  Minus,
   BarChart3,
   FileText,
-  Share2,
-  Download
+  Share2
 } from 'lucide-react'
 import SymptomChart from '../components/SymptomChart'
 import { logAPI, reportAPI } from '../services/api'
@@ -86,6 +84,7 @@ const Dashboard = () => {
       setLoading(false)
     }
   }
+  const [openMailModal, setOpenMailModal] = useState(false)
 
   const formatDate = dateString => {
     if (!dateString) return 'No entries'
@@ -104,6 +103,21 @@ const Dashboard = () => {
     const diffTime = Math.abs(now - date)
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
     return `${diffDays} day${diffDays !== 1 ? 's' : ''} ago`
+  }
+  const [mailing, setMailing] = useState(false)
+  const [email, setEmail] = useState('')
+
+  const handleMailReport = async () => {
+    try {
+      setMailing(true) // use mailing state
+      await reportAPI.mailReport(email) // sends { email }
+      toast.success('Report sent successfully!')
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Failed to send report'
+      toast.error(msg)
+    } finally {
+      setMailing(false) // reset
+    }
   }
 
   const [reportDownloading, setReportDownloading] = useState(false)
@@ -337,7 +351,10 @@ const Dashboard = () => {
           </div>
         </button>
 
-        <Link to='/generate-report' className='block'>
+        <button
+          onClick={() => setOpenMailModal(true)}
+          className='block w-full text-left'
+        >
           <div className='bg-white p-6 rounded-lg shadow-sm border border-gray-100 hover:shadow-md transition-shadow'>
             <div className='flex items-center space-x-4'>
               <div className='p-3 bg-purple-100 rounded-lg'>
@@ -346,13 +363,42 @@ const Dashboard = () => {
               <div>
                 <h3 className='font-semibold text-gray-900'>Mail Report</h3>
                 <p className='text-sm text-gray-600'>
-                  Create comprehensive reports
+                  Send report to your email
                 </p>
               </div>
             </div>
           </div>
-        </Link>
+        </button>
       </div>
+      {openMailModal && (
+        <div className='fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50'>
+          <div className='bg-white p-6 rounded-lg shadow-lg w-96'>
+            <h2 className='text-lg font-semibold mb-4'>Enter your email</h2>
+            <input
+              type='email'
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              className='w-full border rounded p-2 mb-4'
+              placeholder='example@mail.com'
+            />
+            <div className='flex justify-end space-x-2'>
+              <button
+                onClick={() => setOpenMailModal(false)}
+                className='px-4 py-2 bg-gray-200 rounded'
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleMailReport}
+                disabled={mailing}
+                className='px-4 py-2 bg-purple-600 text-white rounded'
+              >
+                {mailing ? 'Sending...' : 'Send'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
