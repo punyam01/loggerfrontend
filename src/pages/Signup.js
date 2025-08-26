@@ -50,13 +50,47 @@ const Signup = () => {
     setError('')
     if (!validateForm()) return
     setLoading(true)
+
     try {
       const { confirmPassword, ...signupData } = form
-      await authAPI.register(signupData)
-      const userResponse = await authAPI.getMe()
-      login(null, userResponse.data.data || userResponse.data)
-      toast.success('Registration successful! Welcome!')
-      navigate('/dashboard')
+
+      // Register user
+      console.log('Attempting registration...')
+      const registerResponse = await authAPI.register(signupData)
+      console.log('Registration response:', registerResponse.data)
+
+      // Use the user data from registration response directly
+      const userData = registerResponse.data.data || registerResponse.data
+
+      if (userData && userData.user) {
+        // Login with the returned user data
+        login(null, userData.user)
+        toast.success('Registration successful! Welcome!')
+        navigate('/dashboard')
+      } else {
+        // Fallback: try to fetch user data
+        console.log('No user data in registration response, trying getMe...')
+        try {
+          // Add a small delay to ensure cookie is set
+          setTimeout(async () => {
+            try {
+              const userResponse = await authAPI.getMe()
+              login(null, userResponse.data.data || userResponse.data)
+              toast.success('Registration successful! Welcome!')
+              navigate('/dashboard')
+            } catch (getMeError) {
+              console.error('getMe failed:', getMeError)
+              // Still consider registration successful, just redirect to login
+              toast.success('Registration successful! Please log in.')
+              navigate('/login')
+            }
+          }, 100)
+        } catch (delayError) {
+          console.error('Delayed getMe failed:', delayError)
+          toast.success('Registration successful! Please log in.')
+          navigate('/login')
+        }
+      }
     } catch (err) {
       console.error('Signup error:', err)
       const msg =
