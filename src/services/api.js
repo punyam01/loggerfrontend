@@ -43,10 +43,10 @@ export const authAPI = {
 }
 
 export const logAPI = {
-  addLog: data => api.post('/log/add', data), // matches POST /logs/add
-  getCurrentMonthCount: () => api.get('/log/monthlycount'), // matches GET /logs/monthlycount
-  getSymptomTrend: () => api.get('/log/symptomtrend'), // matches GET /logs/symptomtrend
-  getLastLogInfo: () => api.get('/log/lastloginfo') // matches GET /logs/lastloginfo
+  addLog: data => api.post('/logs/add', data),
+  getCurrentMonthCount: () => api.get('/logs/monthlycount'),
+  getSymptomTrend: () => api.get('/logs/symptomtrend'),
+  getLastLogInfo: () => api.get('/logs/lastloginfo')
 }
 
 export const userAPI = {
