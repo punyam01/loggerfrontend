@@ -6,10 +6,18 @@ const api = axios.create({
   timeout: 10000 // 10 seconds
 })
 
-// Request interceptor to add token if present - Optional if using cookie-based auth
+// Request interceptor to add token if present (fallback for browsers blocking 3rd-party cookies)
 api.interceptors.request.use(
   config => {
-    // No token needed if backend uses cookie auth
+    try {
+      const token = localStorage.getItem('accessToken')
+      if (token) {
+        config.headers = config.headers || {}
+        config.headers.Authorization = `Bearer ${token}`
+      }
+    } catch (e) {
+      // ignore storage errors
+    }
     return config
   },
   error => Promise.reject(error)

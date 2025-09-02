@@ -21,7 +21,11 @@ const Login = () => {
     setLoading(true)
     setError('')
     try {
-      await authAPI.login(form)
+      const loginRes = await authAPI.login(form)
+      const token = loginRes?.data?.data?.accessToken
+      if (token) {
+        localStorage.setItem('accessToken', token)
+      }
       // After login, fetch current user details:
       const userResponse = await authAPI.getMe()
       login(null, userResponse.data.data || userResponse.data)

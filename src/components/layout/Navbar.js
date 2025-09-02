@@ -15,15 +15,12 @@ const Navbar = () => {
       if (isAuthenticated && !user) {
         setLoading(true)
         try {
-          const token = localStorage.getItem('token')
-          if (token) {
-            const response = await authAPI.getMe()
-            setUser(response.data?.user || response.data?.data || response.data)
-          }
+          const response = await authAPI.getMe()
+          setUser(response.data?.user || response.data?.data || response.data)
         } catch (error) {
           console.error('Failed to fetch user:', error)
           toast.error('Session expired. Please login again.')
-          logout()
+          handleLocalLogout()
         } finally {
           setLoading(false)
         }
@@ -31,20 +28,25 @@ const Navbar = () => {
     }
 
     fetchUser()
-  }, [isAuthenticated, user, setUser, logout])
+  }, [isAuthenticated, user, setUser])
+
+  const handleLocalLogout = () => {
+    try {
+      localStorage.removeItem('accessToken')
+    } catch {}
+    logout()
+  }
 
   const handleLogout = async () => {
     try {
       await authAPI.logout()
-      logout()
       toast.success('Logged out successfully')
-      navigate('/login')
     } catch (error) {
       console.error('Logout failed:', error)
-      logout()
       toast.success('Logged out')
-      navigate('/login')
     } finally {
+      handleLocalLogout()
+      navigate('/login')
       setIsDropdownOpen(false)
     }
   }
